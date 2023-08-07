@@ -1,0 +1,171 @@
+
+sudo apt-get update
+curl -sL https://deb.nodesource.com/setup_18.x -o nodesource_setup.sh
+sudo bash nodesource_setup.sh
+sudo apt install nodejs build-essential
+npm install --save-dev @nomiclabs/hardhat-ethers ethers @nomiclabs/hardhat-waffle ethereum-waffle chai
+npm i @openzeppelin/contracts@4.5.0
+npm i @aave/core-v3  dotenv
+
+mkdir forkEtherAAVEFlash
+cd forkEtherAAVEFlash/
+npx hardhat
+
+vi hardhat.config.js
+
+
+
+require("@nomicfoundation/hardhat-toolbox");
+module.exports = {
+        networks: {
+                hardhat: {
+                localhost: {
+                        url: "https://ec2-54-149-194-207.us-west-2.compute.amazonaws.com:8545",
+                        accounts: ["XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"]
+,                       chainId: 31337
+        
+                }
+,
+                        forking: {
+                                url: "https://cloudflare-eth.com/"
+,                       chainId: 31337
+                    }
+
+                }
+   },
+
+        solidity: "0.8.10",
+};
+
+cd ..
+
+cd contracts
+
+
+vi FlashLoan.js
+
+pragma solidity 0.8.10;
+
+import {FlashLoanSimpleReceiverBase} from "@aave/core-v3/contracts/flashloan/base/FlashLoanSimpleReceiverBase.sol";
+import {IPoolAddressesProvider} from "@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol";
+import {IERC20} from "@aave/core-v3/contracts/dependencies/openzeppelin/contracts/IERC20.sol";
+
+
+
+
+
+contract FlashLoan is FlashLoanSimpleReceiverBase {
+    address payable owner;
+
+    constructor(address _addressProvider)
+        FlashLoanSimpleReceiverBase(IPoolAddressesProvider(_addressProvider))
+    {
+        owner = payable(msg.sender);
+    }
+
+    /**
+        This function is called after your contract has received the flash loaned amount
+     */
+    function executeOperation(
+        address asset,
+        uint256 amount,
+        uint256 premium,
+        address initiator,
+        bytes calldata params
+    ) external override returns (bool) {
+        //
+        // This contract now has the funds requested.
+        // Your logic goes here.
+        //
+
+        // At the end of your logic above, this contract owes
+        // the flashloaned amount + premiums.
+        // Therefore ensure your contract has enough to repay
+        // these amounts.
+
+        // Approve the Pool contract allowance to *pull* the owed amount
+        uint256 amountOwed = amount + premium;
+        IERC20(asset).approve(address(POOL), amountOwed);
+
+        return true;
+    }
+
+    function requestFlashLoan(address _token, uint256 _amount) public {
+        address receiverAddress = address(this);
+        address asset = _token;
+        uint256 amount = _amount;
+        bytes memory params = "";
+        uint16 referralCode = 0;
+
+        POOL.flashLoanSimple(
+            receiverAddress,
+            asset,
+            amount,
+            params,
+            referralCode
+        );
+    }
+
+    function getBalance(address _tokenAddress) external view returns (uint256) {
+        return IERC20(_tokenAddress).balanceOf(address(this));
+    }
+
+    function withdraw(address _tokenAddress) external onlyOwner {
+        IERC20 token = IERC20(_tokenAddress);
+        token.transfer(msg.sender, token.balanceOf(address(this)));
+    }
+
+    modifier onlyOwner() {
+        require(
+            msg.sender == owner,
+            "Only the contract owner can call this function"
+        );
+        _;
+    }
+
+    receive() external payable {}
+}
+
+
+npx hardhat node --hostname ec2-54-149-194-207.us-west-2.compute.amazonaws.com
+
+
+
+
+
+
+
+
+ubuntu@ip-172-31-2-51:~/forkedMainnetFlash$ npx hardhat console
+Welcome to Node.js v20.5.0.
+Type ".help" for more information.
+> const signers = await ethers.getSigners();
+##### working!!!
+const USDC_holder  = '0xcEe284F754E854890e311e3280b767F80797180d'
+
+const signers = await ethers.getSigners();
+const token = await ethers.getContractAt("IERC20", "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" )
+
+await token.balanceOf(USDC_holder)
+await network.provider.send("hardhat_setBalance", [ USDC_holder ,"0x1000000000000000000000",]);
+
+await network.provider.send("hardhat_impersonateAccount", [ USDC_holder ])
+
+const impersonatedSigner = await ethers.getSigner( USDC_holder )
+
+const s18 = await signers[18].getAddress()
+await token.connect(impersonatedSigner).transfer(s18, "200")
+await token.balanceOf(await signers[18].getAddress())
+await ethers.provider.getBalance(await signers[0].getAddress())
+> const deployedContract = await ethers.deployContract("FlashLoan",["0x2f39d218133AFaB8F2B819B1066c7E434Ad94E9e"]);
+
+#note i wento to search on etherscan.io for USDC token contract address... not from aave site.
+await deployedContract.requestFlashLoan('0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',12)
+
+
+
+
+
+https://github.com/NomicFoundation/hardhat/issues/1933
+
+https://github.com/NomicFoundation/hardhat/issues/2593
