@@ -1,3 +1,4 @@
+1.) install software
 
 sudo apt-get update
 curl -sL https://deb.nodesource.com/setup_18.x -o nodesource_setup.sh
@@ -11,9 +12,10 @@ mkdir forkEtherAAVEFlash
 cd forkEtherAAVEFlash/
 npx hardhat
 
+
+
+# 2.) edit hardhat.config ( include new dns and reference to account of interest)
 vi hardhat.config.js
-
-
 
 require("@nomicfoundation/hardhat-toolbox");
 module.exports = {
@@ -38,6 +40,9 @@ module.exports = {
 };
 
 cd ..
+
+# 3.) include FlashLoan.js
+
 
 cd contracts
 
@@ -126,15 +131,10 @@ contract FlashLoan is FlashLoanSimpleReceiverBase {
     receive() external payable {}
 }
 
-
+# 4.) start host node
 npx hardhat node --hostname ec2-54-149-194-207.us-west-2.compute.amazonaws.com
 
-
-
-
-
-
-
+# 5.) start hardhat console
 
 ubuntu@ip-172-31-2-51:~/forkedMainnetFlash$ npx hardhat console
 Welcome to Node.js v20.5.0.
