@@ -138,32 +138,126 @@ npx hardhat node --hostname localhost
 
 # 5.) start hardhat console
 
-ubuntu@ip-172-31-2-51:~/forkedMainnetFlash$ npx hardhat console --network console
+ubuntu@ip-172-31-2-51:~/forkedMainnetFlash$ npx hardhat console --network localhost
+
 
 Welcome to Node.js v20.5.0.
 Type ".help" for more information.
+
+> const signers  = await ethers.getSigners(); 
+> const s0 = await signers[0].getAddress()
+> const dp  = await deployedContract.getAddress()
+>
+# deploy contract
+
+await ethers.provider.getBalance(await signers[0].getAddress())
+> const deployedContract = await ethers.deployContract("FlashLoan",["0x2f39d218133AFaB8F2B819B1066c7E434Ad94E9e"]);
+undefined
+await ethers.provider.getBalance(await signers[0].getAddress())
+
+
+# obtain address
+# obtain an account to impersonate to transfer USDC to my 'contract' 
 > const signers = await ethers.getSigners();
-##### working!!!
-const USDC_holder  = '0xcEe284F754E854890e311e3280b767F80797180d'
+> const USDC_holder  = '0xcEe284F754E854890e311e3280b767F80797180d'
 
-const signers = await ethers.getSigners();
-const token = await ethers.getContractAt("IERC20", "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" )
+>const signers = await ethers.getSigners();
+>const token = await ethers.getContractAt("IERC20", "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" )
 
-await token.balanceOf(USDC_holder)
-##await network.provider.send("hardhat_setBalance", [ USDC_holder ,"0x1000000000000000000000",]);
+>await token.balanceOf(USDC_holder)
+>await network.provider.send("hardhat_setBalance", [ USDC_holder ,"0x1000000000000000000000",]);
 
-await network.provider.send("hardhat_impersonateAccount", [ USDC_holder ])
+>await network.provider.send("hardhat_impersonateAccount", [ USDC_holder ])
 
-const impersonatedSigner = await ethers.getSigner( USDC_holder )
+>const impersonatedSigner = await ethers.getSigner( USDC_holder )
 
-const s18 = await signers[18].getAddress()
-await token.connect(impersonatedSigner).transfer(s18, "200")
+> await ethers.provider.getBalance(dp)
+0n
+> await token.balanceOf(dp)
+0n
+
+
+
+# transfer to my contract
+await token.connect(impersonatedSigner).transfer(dp, "2000000")
+ await token.balanceOf(dp)
+2000000n
+>
+
+> const tx = await deployedContract.requestFlashLoan('0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',1000000)
+undefined
+> const txReceipt = await ethers.provider.getTransactionReceipt(tx.hash);
+undefined
+
 await token.balanceOf(await signers[18].getAddress())
 await ethers.provider.getBalance(await signers[0].getAddress())
 > const deployedContract = await ethers.deployContract("FlashLoan",["0x2f39d218133AFaB8F2B819B1066c7E434Ad94E9e"]);
 
+> let abi = [ "event Transfer(address indexed from, address indexed to, uint value)" ];
+undefined
+> abi
+[
+  'event Transfer(address indexed from, address indexed to, uint value)'
+]
+
+> iface = new ethers.Interface(abi)
+Interface {
+  fragments: [
+    EventFragment {
+      type: 'event',
+      inputs: [Array],
+      name: 'Transfer',
+      anonymous: false
+    }
+  ],
+  deploy: ConstructorFragment {
+    type: 'constructor',
+    inputs: [],
+    payable: false,
+    gas: null
+  },
+  fallback: null,
+  receive: false
+}
+> iface.parseLog(txReceipt.logs[1])
+LogDescription {
+  fragment: EventFragment {
+    type: 'event',
+    inputs: [ [ParamType], [ParamType], [ParamType] ],
+    name: 'Transfer',
+    anonymous: false
+  },
+  name: 'Transfer',
+  signature: 'Transfer(address,address,uint256)',
+  topic: '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+  args: Result(3) [
+    '0x98C23E9d8f34FEFb1B7BD6a91B7FF122F4e16F5c',
+    '0x77AD263Cd578045105FBFC88A477CAd808d39Cf6',
+    1000000n
+  ]
+}
+
+> iface.parseLog(txReceipt.logs[5])
+LogDescription {
+  fragment: EventFragment {
+    type: 'event',
+    inputs: [ [ParamType], [ParamType], [ParamType] ],
+    name: 'Transfer',
+    anonymous: false
+  },
+  name: 'Transfer',
+  signature: 'Transfer(address,address,uint256)',
+  topic: '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+  args: Result(3) [
+    '0x77AD263Cd578045105FBFC88A477CAd808d39Cf6',
+    '0x98C23E9d8f34FEFb1B7BD6a91B7FF122F4e16F5c',
+    1000500n
+  ]
+}
+
+
 #note i wento to search on etherscan.io for USDC token contract address... not from aave site.
-await deployedContract.requestFlashLoan('0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',12)
+await deployedContract.requestFlashLoan('0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',1000000)
 
 
 
