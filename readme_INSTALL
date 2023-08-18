@@ -154,7 +154,7 @@ await ethers.provider.getBalance(await signers[0].getAddress())
 > const deployedContract = await ethers.deployContract("FlashLoan",["0x2f39d218133AFaB8F2B819B1066c7E434Ad94E9e"]);
 undefined
 await ethers.provider.getBalance(await signers[0].getAddress())
-
+const dp  = await deployedContract.getAddress()
 
 # obtain address
 # obtain an account to impersonate to transfer USDC to my 'contract' 
@@ -219,6 +219,10 @@ Interface {
   fallback: null,
   receive: false
 }
+
+
+const txReceipt = await ethers.provider.getTransactionReceipt(tx.hash);
+
 > iface.parseLog(txReceipt.logs[1])
 LogDescription {
   fragment: EventFragment {
