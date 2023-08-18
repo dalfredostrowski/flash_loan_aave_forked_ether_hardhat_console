@@ -138,7 +138,8 @@ npx hardhat node --hostname localhost
 
 # 5.) start hardhat console
 
-ubuntu@ip-172-31-2-51:~/forkedMainnetFlash$ npx hardhat console
+ubuntu@ip-172-31-2-51:~/forkedMainnetFlash$ npx hardhat console --network console
+
 Welcome to Node.js v20.5.0.
 Type ".help" for more information.
 > const signers = await ethers.getSigners();
