@@ -259,6 +259,12 @@ LogDescription {
 #note i wento to search on etherscan.io for USDC token contract address... not from aave site.
 await deployedContract.requestFlashLoan('0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',1000000)
 
+> await token.balanceOf(dp)
+1998500n
+> const tx3 = await deployedContract.requestFlashLoan('0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',1000000)
+undefined
+> await token.balanceOf(dp)
+1998000n
 
 
 
