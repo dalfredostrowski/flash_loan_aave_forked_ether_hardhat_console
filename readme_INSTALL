@@ -133,7 +133,8 @@ contract FlashLoan is FlashLoanSimpleReceiverBase {
 }
 
 # 4.) start host node
-npx hardhat node --hostname ec2-54-149-194-207.us-west-2.compute.amazonaws.com
+##npx hardhat node --hostname ec2-54-149-194-207.us-west-2.compute.amazonaws.com
+npx hardhat node --hostname localhost
 
 # 5.) start hardhat console
 
